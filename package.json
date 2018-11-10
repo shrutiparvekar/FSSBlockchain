@@ -1,0 +1,21 @@
+{
+  "name": "major_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Asra Ustad",
+  "license": "ISC",
+  "dependencies": {
+    "alert-node": "^1.2.2",
+    "body-parser": "^1.18.3",
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "http": "0.0.0",
+    "js-alert": "^1.0.4",
+    "node-fetch": "^2.2.0",
+    "popups": "^1.1.3"
+  }
+}

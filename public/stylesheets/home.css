@@ -1,0 +1,11 @@
+body{
+    background-image: url("/images/blockchain.jpg");
+  /* background-color: black;*/
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.mycard{
+    box-sizing: border-box;
+    /* margin: 20%; */
+}
