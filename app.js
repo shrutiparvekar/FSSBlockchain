@@ -245,6 +245,27 @@ app.post('/farmer_login', function(req,res){
     res.render('farmer_page');
 });
 
+app.post('/generate_report', function(req,res){
+	fetch(`http://localhost:3000/api/org.example.empty.subsidyTransfer`)
+    .then(function(response) {
+        return response.json();
+    }).then(function(res){
+    	var transactions=[];
+    	for(var i in res){
+    		console.log('\nTransaction '+i+': \n'+JSON.stringify(res[i]));
+    		var transaction=res[i];
+    		var date=new Date(transaction.timestamp);
+    		var year=date.getFullYear();
+    		var month=date.getMonth()+1;
+    		if(month==req.body.reportMonth && year==req.body.reportYear){ transactions.push(transaction);console.log(' *** ');}
+    		console.log('\n'+date+'\t Year: '+year+'\t Month: '+month+'\n');
+    	}
+    	for(var i in transactions){
+    		console.log('\nDisplayed Transaction : \n'+JSON.stringify(res[i]));
+    	}
+    });
+});
+
 app.listen(3500, function(){
     console.log("Server is listening on 3500");
 });
