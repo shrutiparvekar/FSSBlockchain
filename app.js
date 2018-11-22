@@ -66,11 +66,89 @@ app.use(bodyParser.urlencoded({extended:true}));
 
 ////////////////////////////////////////////
 
+
+//initiate nexmo client
+const Nexmo = require('nexmo');
+const nexmo = new Nexmo({
+  apiKey: '010ba075',
+  apiSecret: '6MHcx8MzNUIZYC9N'
+});
+
+app.post('/request', (req, res) => {
+    // A user registers with a mobile phone number
+    //let phoneNumber = req.body.number;
+    let phoneNumber = "918830618513"
+    console.log(phoneNumber);
+    let temp;
+    nexmo.verify.request({number: phoneNumber, brand: 'Awesome Company'}, (err, result) => {
+      if(err) {
+        console.log(err);
+   
+        //Oops! Something went wrong, respond with 500: Server Error
+        //res.status(500).send(err);
+      } else {
+        console.log(result);
+        temp = result.request_id;
+        console.log("temp"+temp);
+
+        if(result && result.status == '0') {
+          //A status of 0 means success! Respond with 200: OK
+          //res.status(200).send(result);
+          console.log('rrrr '+temp);
+          res.render('retailer_page', {requestID: temp});
+        } else {
+          //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
+          //The rest of the status values can be found here: https://developer.nexmo.com/api/verify#status-values
+          //res.status(400).send(result);
+        }
+      }
+    })
+/*    console.log('rrrr '+temp);
+    res.render('retailer_page', {requestID: temp});*/
+});
+
+  app.post('/check', (req, res) => {
+    //To verify the phone number the request ID and code are required.
+    let code = req.body.code;
+    let requestId = req.body.reqID;
+   
+    console.log("Code: " + code + " Request ID: " + requestId);
+   
+    nexmo.verify.check({request_id: requestId, code: code}, (err, result) => {
+      if(err) {
+        console.log(err);
+   
+        //Oops! Something went wrong, respond with 500: Server Error
+        res.status(500).send(err);
+      } else {
+        console.log(result)
+   
+        if(result && result.status == '0') {
+          //A status of 0 means success! Respond with 200: OK
+          res.status(200).send(result);
+          console.log('Account verified!')
+        } else {
+          //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
+          //The rest of the status values can be found here: https://developer.nexmo.com/api/verify#status-values
+          res.status(400).send(result);
+          console.log('Error verifying account')
+        }
+      }
+    });
+    
+  });
+
+/*const from = 'Nexmo'
+const to = '918830618513'   
+const text = 'Hello from Nexmo'
+
+nexmo.message.sendSms(from, to, text)
+*/
 app.get('/', function(req,res){
     res.render('home');
 });
 app.get('/retailer/retailer_page', function(req,res){
-    res.render('retailer_page');
+    res.render('retailer_page', {requestID: 0});
 });
 
 app.get('/farmer/farmer_login', function(req,res){
@@ -107,7 +185,7 @@ app.post('/add_token', function(req, res){
     }).catch(err => {console.log(err);});
 
     //res.render('notificationPage',{notificationMessage:notificationMessage});
-    res.render('gov_page');
+    res.render('gov_page', {tokenCount: 0});
 });
 
 //Adding a purchase
@@ -248,3 +326,17 @@ app.post('/farmer_login', function(req,res){
 app.listen(3500, function(){
     console.log("Server is listening on 3500");
 });
+
+/*
+var admin = require("firebase-admin");
+
+// Get a database reference to our posts
+var db = admin.database();
+var ref = db.ref("server/saving-data/fireblog/posts");
+
+// Attach an asynchronous callback to read the data at our posts reference
+ref.on("value", function(snapshot) {
+  console.log(snapshot.val());
+}, function (errorObject) {
+  console.log("The read failed: " + errorObject.code);
+});*/
