@@ -4,6 +4,7 @@ var http    = require('http');
 var jsalert=require('js-alert');
 const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
+var request = require('request');
 
 app.set("view engine", "ejs");
 console.log("Starting the fun..");
@@ -162,9 +163,6 @@ app.get('/government/gov_login', function(req, res){
     res.render('gov_login');
 });
 
-app.post('/gov_login', function(req,res){
-    res.render('gov_page');
-});
 
 //Add Token
 app.post('/add_token', function(req, res){
@@ -262,7 +260,25 @@ app.post('/retailer_page', function(req,res){
                     return response.json();
                 }).catch(err => {console.log(err);});
             }).then(function(){
-				
+        
+              fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
+              .then(function(response) {
+                  return response.json();
+              }).then(function(myJson) {
+                  const Nexmo = require('nexmo')
+                  const nexmo = new Nexmo({
+                  apiKey: '010ba075',
+                  apiSecret: '6MHcx8MzNUIZYC9N'
+                  })
+                  console.log('Balance sent: '+myJson.balance+'\n')
+                  console.log(JSON.stringify(myJson))
+                  const from = 'Nexmo'
+                  const to = '918830977269'
+                  var bal=Number(myJson.balance)+Number(farmer_details.quantity)
+                  const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+bal;
+                  nexmo.message.sendSms(from, to, text)
+              });
+
             	res.render('retailer_page.ejs',{success:true});
             }) 
             
@@ -323,8 +339,116 @@ app.get('/bank/bank_page', function(req,res){
 // });
 
 app.post('/farmer_login', function(req,res){
-    res.render('farmer_page');
+    var options = { method: 'GET',
+      url: 'https://blockchaindb-55af.restdb.io/rest/farmer',
+      headers: 
+      { 'cache-control': 'no-cache',
+        'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+      } 
+    };
+
+     //console.log(req.body.aadharId + "-----");
+     var aadharid = req.body.aadharId;
+     var password = req.body.password;
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  var flag = 0;
+  var farmerArray = JSON.parse(body);
+  for(var i = 0; i < farmerArray.length; i++){
+    //console.log( farmerArray[i].farmerId);
+    if(aadharid == farmerArray[i].farmerId && password == farmerArray[i].farmerPassword) {flag = 1;}
+  }
+  if(flag) res.render('farmer_page');
+  else res.redirect('/farmer/farmer_login');
+  console.log(body);
+ 
+  // console.log(farmerArray);
+  // console.log(farmerArray[0].farmerId);
+  // console.log(farmerArray.length + "****");
 });
+    
+});
+
+
+app.post('/gov_login', function(req,res){
+  var options = { method: 'GET',
+    url: 'https://blockchaindb-55af.restdb.io/rest/government',
+    headers: 
+    { 'cache-control': 'no-cache',
+      'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+    } 
+  };
+
+   //console.log(req.body.govtId + "-----");
+   var govtid = req.body.govtId;
+   var password = req.body.password;
+request(options, function (error, response, body) {
+if (error) throw new Error(error);
+var flag = 0;
+var govtArray = JSON.parse(body);
+for(var i = 0; i < govtArray.length; i++){
+  //console.log(govtArray[i].farmerId);
+  if(govtid == govtArray[i].govtId && password == govtArray[i].govtPassword) {flag = 1;}
+}
+if(flag) res.render('gov_page');
+else res.redirect('/government/gov_login');
+console.log(body);
+
+// console.log(govtArray);
+// console.log(govtArray[0].farmerId);
+// console.log(govtArray.length + "****");
+});
+  
+});
+
+
+app.post('/generate_report', function(req,res){
+	fetch(`http://localhost:3000/api/org.example.empty.subsidyTransfer`)
+    .then(function(response) {
+        return response.json();
+    }).then(function(res){
+    	var transactions=[];
+    	for(var i in res){
+    		console.log('\nTransaction '+i+': \n'+JSON.stringify(res[i]));
+    		var transaction=res[i];
+    		var date=new Date(transaction.timestamp);
+    		var year=date.getFullYear();
+    		var month=date.getMonth()+1;
+    		if(month==req.body.reportMonth && year==req.body.reportYear){ transactions.push(transaction);console.log(' *** ');}
+    		console.log('\n'+date+'\t Year: '+year+'\t Month: '+month+'\n');
+    	}
+    	for(var i in transactions){
+    		console.log('\nDisplayed Transaction : \n'+JSON.stringify(res[i]));
+    	}
+    });
+});
+
+
+function getFarmerInfo(id){
+  var options = { method: 'GET',
+      url: 'https://blockchaindb-55af.restdb.io/rest/farmer',
+      headers: 
+      { 'cache-control': 'no-cache',
+        'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+      } 
+    };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  var index = 0;
+  var farmerArray = JSON.parse(body);
+  for(var i = 0; i < farmerArray.length; i++){
+    //console.log( farmerArray[i].farmerId);
+    if(id == farmerArray[i].farmerId) {index = i;}
+  }
+  var infoObject = farmerArray[index];
+  console.log(infoObject);
+  return infoObject;
+  // console.log(farmerArray);
+  // console.log(farmerArray[0].farmerId);
+  // console.log(farmerArray.length + "****");
+});
+}
 
 app.listen(3500, function(){
     console.log("Server is listening on 3500");
