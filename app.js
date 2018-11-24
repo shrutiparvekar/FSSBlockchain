@@ -259,7 +259,25 @@ app.post('/retailer_page', function(req,res){
                     return response.json();
                 }).catch(err => {console.log(err);});
             }).then(function(){
-				
+        
+              fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
+              .then(function(response) {
+                  return response.json();
+              }).then(function(myJson) {
+                  const Nexmo = require('nexmo')
+                  const nexmo = new Nexmo({
+                  apiKey: '010ba075',
+                  apiSecret: '6MHcx8MzNUIZYC9N'
+                  })
+                  console.log('Balance sent: '+myJson.balance+'\n')
+                  console.log(JSON.stringify(myJson))
+                  const from = 'Nexmo'
+                  const to = '918830977269'
+                  var bal=Number(myJson.balance)+Number(farmer_details.quantity)
+                  const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+bal;
+                  nexmo.message.sendSms(from, to, text)
+              });
+
             	res.render('retailer_page.ejs',{success:true});
             }) 
             
