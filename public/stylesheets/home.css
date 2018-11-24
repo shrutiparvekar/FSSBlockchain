@@ -1,11 +1,65 @@
-body{
-    background-image: url("/images/blockchain.jpg");
-  /* background-color: black;*/
+#home_Background{
+   /* background-image: url("/images/blockchain.jpg");*/
+    /* background-color:#E5E4E2; */
+    background-color: #F0FFFF;
     background-size: cover;
     background-repeat: no-repeat;
+}
+.background{
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-image: url("/images/blockchain.jpg");
 }
 
 .mycard{
     box-sizing: border-box;
     /* margin: 20%; */
+
+    
+}
+#bank{
+    background-image: url("/images/bank.jpg");
+    width: 500px;
+    height: 300px;
+   /* opacity: .8;*/
+    border-color: black;
+    border-width: 2px;
+}
+#farmer{
+    background-image: url("/images/farmer.jpg");
+    width: 500px;
+    height: 300px;
+   /* opacity: .8;*/
+    border-color: black;
+    border-width: 2px;
+}
+
+#retailer{
+    background-image: url("/images/retailer.jpg");
+    width: 500px;
+    height: 300px;
+   /* opacity: .8;*/
+    border-color: black;
+    border-width: 2px;
+}
+
+#gov{
+    background-image: url("/images/gov.jpg");
+    width: 500px;
+    height: 300px;
+    /*opacity: .8;*/
+    border-color: black;
+    border-width: 2px;
+}
+
+#login_button{
+     margin-left: 30%; 
+     margin-top: 20%; 
+    padding: 10px;
+    /* align-self: center; */
+    font-size: 25px;
+}
+#footer{
+    background-color: #87BCEA;
+    padding:3%;
 }

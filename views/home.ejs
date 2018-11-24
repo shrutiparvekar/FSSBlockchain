@@ -3,7 +3,7 @@
             <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> 
             <link rel="stylesheet" type="text/css" href="/stylesheets/home.css">
         </head>
-    <body>
+    <body id="home_Background">
         <!-- Image and text -->
       <nav class="navbar navbar navbar-dark bg-dark" style="height:10%;">
         <a class="navbar-brand" href="/">
@@ -13,24 +13,37 @@
       </nav>
       <div>
           <br><br>
-          <h1 style="color: white; text-align: center;"></h1>
+          <br><br>
+          <div class="container">
+                  <div>
+                          <p>The Parliament of India is the supreme legislative body of the Republic of India. 
+                                  The Parliament is composed of the President of India and the houses. 
+                                  It is a bicameral legislature with two houses: the Rajya Sabha (Council of States)
+                                   and the Lok Sabha (House of the People). 
+                                  The President in his role as head of legislature has full powers to summon and prorogue either 
+                                  house of Parliament or to dissolve Lok Sabha.
+                                   The president can exercise these powers only upon the advice of the Prime Minister
+                                    and his Union Council of Ministers. 
+                          </p>
+                  </div>
+          </div>
           <br><br>
           <div class="container">
             <div class="row">
                 <div class="col-md-6 mycard">
-                        <div class="card">
-                                <h2 class="card-title" style="text-align:center; padding-top: 20px;">Bank</h2>
-                                <div class="card-body">
+                        <div class="card" id="bank">
+                                
+                                <div class="card-body" >
                                     <!-- <p class="card-text">Portal for manufacturers</p> -->
-                                    <a href="/bank/bank_page" class="btn btn-dark">Enter as Bank</a>
+                                    <a href="/bank/bank_page" class="btn btn-dark" id="login_button">Enter as Bank</a>
                                 </div>
                         </div>
                 </div>
                 <div class="col-md-6 mycard">
-                        <div class="card">
-                                <h2 class="card-title" style="text-align:center; padding-top: 20px;">Farmer</h2>
+                        <div class="card" id="farmer">
+        
                                 <div class="card-body">
-                                    <a href="/farmer/farmer_login" class="btn btn-dark">Enter as farmer</a>
+                                    <a href="/farmer/farmer_login" class="btn btn-dark" id="login_button">Enter as farmer</a>
                                 </div>
                         </div>
                 </div>
@@ -38,23 +51,38 @@
             <br><br>
             <div class="row">
                     <div class="col-md-6 mycard">
-                            <div class="card">
-                                    <h2 class="card-title" style="text-align:center; padding-top: 20px;">Retailers</h2>
+                            <div class="card" id="retailer">
+        
                                     <div class="card-body">
-                                        <a href="/retailer/retailer_page" class="btn btn-dark">Enter as Retailer</a>
+                                        <a href="/retailer/retailer_page" class="btn btn-dark" id="login_button">Enter as Retailer</a>
                                     </div>
                             </div>
                     </div>
                     <div class="col-md-6 mycard">
-                            <div class="card">
-                                    <h2 class="card-title" style="text-align:center; padding-top: 20px;">Government</h2>
+                            <div class="card" id="gov">
+                
                                     <div class="card-body">
-                                        <a href="/government/gov_login" class="btn btn-dark">Enter as Government</a>
+                                        <a href="/government/gov_login" class="btn btn-dark" id="login_button">Enter as Government</a>
                                     </div>
                             </div>
                     </div>
             </div>
-        </div> 
-               
+        </div> <br>
+        <br>
+        <footer class="container-fluid text-center" id="footer">
+		<div class="row" >
+			<div class="col-sm-4">
+				<h4>Contact Us</h4>
+				<h5>Mobile No: 8888255555</h5>
+				<h5>Email id: fertilizerdept@gov.in</h5>
+			</div>
+			<div class="col-sm-4"></div>
+			<div class="col-sm-4">
+				<br>
+				<br>
+				<p style="font-weight: bold;font-size: 20px;">Copyright &copy; 2018</p>
+			</div>
+		</div>
+	</footer>       
     </body>
 </html>
