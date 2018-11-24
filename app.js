@@ -77,6 +77,8 @@ const nexmo = new Nexmo({
 app.post('/request', (req, res) => {
     // A user registers with a mobile phone number
     //let phoneNumber = req.body.number;
+    let aadharNo = req.body.AadharId;
+    //get mobile number corresponding to above aadhar number
     let phoneNumber = "918830618513"
     console.log(phoneNumber);
     let temp;
@@ -119,23 +121,24 @@ app.post('/request', (req, res) => {
         console.log(err);
    
         //Oops! Something went wrong, respond with 500: Server Error
-        res.status(500).send(err);
+        //res.status(500).send(err);
       } else {
         console.log(result)
    
         if(result && result.status == '0') {
           //A status of 0 means success! Respond with 200: OK
-          res.status(200).send(result);
+          //res.status(200).send(result);
           console.log('Account verified!')
+          res.render('retailer_page',  {requestID: 0});
         } else {
           //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
           //The rest of the status values can be found here: https://developer.nexmo.com/api/verify#status-values
-          res.status(400).send(result);
+          //res.status(400).send(result);
           console.log('Error verifying account')
         }
       }
     });
-    
+
   });
 
 /*const from = 'Nexmo'

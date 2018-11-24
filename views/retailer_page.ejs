@@ -44,10 +44,15 @@
                           <label for="exampleInputPassword1">Quantity</label>
                           <input type="number" class="form-control" name="quantity" placeholder="Quantity">
                         </div>
-                        <input type="submit" class="btn btn-dark">
+                        <input type="submit" class="btn btn-dark" style="float: right">
                       </form>
+                      
+                      <form method="POST" action="/request">
+                        <input type="submit" class="btn btn-dark"  value="Generate OTP">    
+                    </form>
+                    
                       <button onclick="document.getElementById('id01').style.display='block'" class="btn btn-primary mybtn">Verify OTP</button>
-
+                      
                       <div id="id01" class="w3-modal">
                             <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
                         
@@ -55,7 +60,7 @@
                                 <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
                                 <!--img src="img_avatar4.png" alt="Avatar" style="width:30%" class="w3-circle w3-margin-top"-->
                               </div>
-                        
+                              
                               <form class="w3-container" action="/check" method="POST">
                                 <div class="w3-section">
                                   <label><b>Mobile verification</b></label>
@@ -70,9 +75,7 @@
                             </div>    
                         </div>
 
-                      <form method="POST" action="/request">
-                        <input type="submit" class="btn btn-dark" value="Generate OTP">    
-                    </form>
+                      
                 </div>  
 
                 <!-- <form method="POST" action="/retailer_page">
