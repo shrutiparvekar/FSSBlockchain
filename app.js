@@ -165,7 +165,7 @@ nexmo.message.sendSms(from, to, text)
 app.get('/', function(req,res){
     res.render('home');
 });
-app.get('/retailer/retailer_page', function(req,res){
+app.get('/retailer_page', function(req,res){
     res.render('retailer_page', {requestID: 0, verified: 0});
 });
 
@@ -224,9 +224,9 @@ app.post('/retailer_page', function(req,res){
     //"transactionId": "string",
     };
     //console.log(obj);
-    if(oldID != ewID){
+    /*if(oldID != newID){
       res.render('retailer_page.ejs',{success:false});
-    }
+    }*/
     fetch('http://localhost:3000/api/org.example.empty.purchase/',{
         method: 'POST',
         headers: {'Content-Type':'application/json'},
