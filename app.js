@@ -218,9 +218,9 @@ app.post('/retailer_page', function(req,res){
     //"transactionId": "string",
     };
     //console.log(obj);
-    if(oldID != ewID){
+    /*if(oldID != newID){
       res.render('retailer_page.ejs',{success:false});
-    }
+    }*/
     fetch('http://localhost:3000/api/org.example.empty.purchase/',{
         method: 'POST',
         headers: {'Content-Type':'application/json'},
