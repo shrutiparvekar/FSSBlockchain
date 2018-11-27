@@ -171,7 +171,7 @@ app.post('/add_token', function(req, res){
     //console.log(req.body);
     var obj={
         "$class": "org.example.empty.addTokens",
-        "government": "G1",
+        "government": "GOVT",
         "amount": numToken,
       }
       console.log(obj);
@@ -193,7 +193,22 @@ app.post('/retailer_page', function(req,res){
     console.log(req.body);
     var farmer_details = req.body;
     var UR="org.example.empty.Farmer#";
-    var obj={
+    console.log("************************");
+    
+    fetch("http://localhost:3000/api/org.example.empty.Government#GOVT")
+    .then(function(response) {
+        return response.json();
+    }).then(function(myJson) {
+        var resp=myJson;
+        return resp[0].balance;
+    }).then(function(bal){
+        if(bal<farmer_details.quantity){
+            console.log('Transaction failed: Out of tokens!');
+            res.render('error.ejs',{errorMsg: "Transaction failed: Out of tokens!"});
+        }
+        else{
+            
+        var obj={
         "$class": "org.example.empty.purchase",
         "quantity": farmer_details.quantity,  
         "farmer": ""+UR+farmer_details.AadharId
@@ -231,7 +246,7 @@ app.post('/retailer_page', function(req,res){
             "$class": "org.example.empty.Subsidy",
             "sid": newSubsidyId,
             "amount": farmer_details.quantity,
-            "owner": "resource:org.example.empty.Government#G1"
+            "owner": "resource:org.example.empty.Government#GOVT"
         };
         console.log(obj1);
           fetch('http://localhost:3000/api/org.example.empty.Subsidy/',{
@@ -247,7 +262,7 @@ app.post('/retailer_page', function(req,res){
                 var obj2={
                     "$class": "org.example.empty.subsidyTransfer",
                     "farmer": farmer_details.AadharId,
-                    "government": "G1",
+                    "government": "GOVT",
                     "subsidy": newSubsidyId
                 };
                 fetch('http://localhost:3000/api/org.example.empty.subsidyTransfer/',{
@@ -263,18 +278,19 @@ app.post('/retailer_page', function(req,res){
               fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
               .then(function(response) {
                   return response.json();
-              }).then(function(myJson) {
+              }).then(function(myJsoni) {
                   const Nexmo = require('nexmo')
                   const nexmo = new Nexmo({
                   apiKey: '010ba075',
                   apiSecret: '6MHcx8MzNUIZYC9N'
                   })
-                  console.log('Balance sent: '+myJson.balance+'\n')
-                  console.log(JSON.stringify(myJson))
+                  console.log('Balance sent: '+myJsoni.balance+'\n'+'quant: '+farmer_details.quantity+'\n')
+                  console.log(JSON.stringify(myJsoni))
                   const from = 'Nexmo'
-                  const to = '918830977269'
-                  var bal=Number(myJson.balance)+Number(farmer_details.quantity)
-                  const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+bal;
+                  const to = '918830618513'
+                  var bals=Number(myJsoni.balance)+Number(farmer_details.quantity)
+                  const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+bals;
+                  console.log("***"+text+"***")
                   nexmo.message.sendSms(from, to, text)
               });
 
@@ -285,7 +301,8 @@ app.post('/retailer_page', function(req,res){
             .catch(err => {console.log(err);});
 
          }).catch(error => console.log(error));
-    
+        }
+    });
 });
 
 
