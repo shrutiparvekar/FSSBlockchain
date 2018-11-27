@@ -160,9 +160,9 @@ app.get('/government/gov_login', function(req, res){
     res.render('gov_login');
 });
 
-app.post('/gov_page', function(req,res){
+/*app.post('/gov_page', function(req,res){
     res.render('gov_page');
-});
+});*/
 app.get('/gov_page', function(req,res){
     res.render('gov_page');
 });
