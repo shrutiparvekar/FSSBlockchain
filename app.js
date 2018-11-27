@@ -165,7 +165,7 @@ nexmo.message.sendSms(from, to, text)
 app.get('/', function(req,res){
     res.render('home');
 });
-app.get('/retailer/retailer_page', function(req,res){
+app.get('/retailer_page', function(req,res){
     res.render('retailer_page', {requestID: 0, verified: 0});
 });
 
@@ -177,6 +177,12 @@ app.get('/government/gov_login', function(req, res){
     res.render('gov_login');
 });
 
+/*app.post('/gov_page', function(req,res){
+    res.render('gov_page');
+});*/
+app.get('/gov_page', function(req,res){
+    res.render('gov_page');
+});
 
 //Add Token
 app.post('/add_token', function(req, res){
@@ -280,25 +286,22 @@ app.post('/retailer_page', function(req,res){
                     return response.json();
                 }).catch(err => {console.log(err);});
             }).then(function(){
-        
-              fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
-              .then(function(response) {
-                  return response.json();
-              }).then(function(myJson) {
-                  const Nexmo = require('nexmo')
-                  const nexmo = new Nexmo({
-                  apiKey: '010ba075',
-                  apiSecret: '6MHcx8MzNUIZYC9N'
-                  })
-                  console.log('Balance sent: '+myJson.balance+'\n')
-                  console.log(JSON.stringify(myJson))
-                  const from = 'Nexmo'
-                  const to = '918830977269'
-                  var bal=Number(myJson.balance)+Number(farmer_details.quantity)
-                  const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+bal;
-                  nexmo.message.sendSms(from, to, text)
-              });
+				fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
+                .then(function(response) {
+                    return response.json();
+                }).then(function(myJson) {
+                    const Nexmo = require('nexmo')
+                    const nexmo = new Nexmo({
+                    apiKey: '010ba075',
+                    apiSecret: '6MHcx8MzNUIZYC9N'
+                    })
 
+                    const from = 'Nexmo'
+                    const to = '918830618513'
+                    const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+myJson.balance;
+
+                    nexmo.message.sendSms(from, to, text)
+                });
             	res.render('retailer_page.ejs',{success:true});
             }) 
             
@@ -422,7 +425,10 @@ console.log(body);
 });
 
 
-app.post('/generate_report', function(req,res){
+app.post('/generate_report', function(req,resp){
+    var entries=[];
+    var month;
+    var year;
 	fetch(`http://localhost:3000/api/org.example.empty.subsidyTransfer`)
     .then(function(response) {
         return response.json();
@@ -432,15 +438,52 @@ app.post('/generate_report', function(req,res){
     		console.log('\nTransaction '+i+': \n'+JSON.stringify(res[i]));
     		var transaction=res[i];
     		var date=new Date(transaction.timestamp);
-    		var year=date.getFullYear();
-    		var month=date.getMonth()+1;
+    		year=date.getFullYear();
+    		month=date.getMonth()+1;
     		if(month==req.body.reportMonth && year==req.body.reportYear){ transactions.push(transaction);console.log(' *** ');}
     		console.log('\n'+date+'\t Year: '+year+'\t Month: '+month+'\n');
-    	}
-    	for(var i in transactions){
-    		console.log('\nDisplayed Transaction : \n'+JSON.stringify(res[i]));
-    	}
+        }
+        
+        fetch(`http://localhost:3000/api/org.example.empty.Subsidy`)
+            .then(function(response){
+                return response.json();
+            }).then(function(res){
+               
+                 for(i in res){
+                     entries[i]=(res[i]);
+                     //console.log(i+"  "+entries[i]);
+                 }  
+                 return entries;
+            }).then(function(entries){
+                var i=0;
+                for(var i in transactions){
+                    
+                    //     //transactions[i]["Quantity"]="1";
+                        //console.log(i+'\nDisplayed Transaction : \n'+JSON.stringify(transactions[i]));
+                        var subsidyId;
+                        subsidyId=transactions[i].subsidy;
+                        subsidyId=subsidyId.substring(35);
+                        //console.log(subsidyId);
+                        var j=0;
+                        while(true){
+                            //console.log(entries[j].sid);
+                            if(subsidyId==entries[j].sid){
+                                transactions[i]["Amount"]=entries[j].amount; 
+                                break; 
+                            }
+                            else j=j+1;
+                        }
+                       // console.log(i+'\nDisplayed Transaction : \n'+JSON.stringify(transactions[i]));
+                       
+                     } 
+                     return transactions;
+                        
+            }).then(function(transactions){
+               // console.log("-----------------"+JSON.stringify(entries));
+                resp.render('blockchain-reports',{transactions:transactions,month:month,year:year});
+            });
     });
+   
 });
 
 

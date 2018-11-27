@@ -1,0 +1,54 @@
+<html>
+    <%var months=[];months[1]="January";months[2]="February";months[3]="March";months[4]="April";months[5]="May";
+    months[6]="June";months[7]="July";months[8]="August";months[9]="September";months[10]="October";
+    months[11]="November";months[12]="December";%>
+    <head>
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> 
+            <link rel="stylesheet" type="text/css" href="/stylesheets/home.css">
+        </head>
+    <body class="background">
+        <!-- Image and text -->
+      <nav class="navbar navbar navbar-dark bg-dark" style="height:10%;">
+        <a class="navbar-brand" href="/gov_page">
+          <img src="/images/left-arrow.png" width="30" height="30" class="d-inline-block align-top" alt="" style="margin-right:10px; ">
+          Fertilizer Subsidy Distribution
+        </a>
+      </nav>
+      <div>
+           <br><br>
+          <!----div style="background-color: black"><h2 style="color: white; text-align: center;">Transaction Report for 11,2018 </h2></div--> 
+          <br><br>
+          <div   class="container">
+
+            <div class="row">
+                
+                <div class="col-md-12" style="box-sizing: border-box; padding: 30px; background-color: white; margin: auto; height: auto; border-radius: 5px; box-shadow: 0 0 10px rgb(97, 92, 92);">
+                        <h2 style="text-align: center">Transaction Report for <%=months[month]%> <%=year%></h2><br>
+                    <table class="reports" border="1" cellpadding="5">
+                        <tr>
+                            <th>Transaction id</th>
+                            <th>Farmer ID</th>
+                            <th>Subsidy Amount</th>
+                            <th>Year</th>
+                            <th>Month</th>
+                            <th>Time</th>
+                        </tr>
+                        <%for(var i in transactions){
+                            var entry=JSON.stringify(transactions[i]);%>
+                        <tr>
+                            <td><%=transactions[i].transactionId;%></td>
+                            <td><%=transactions[i].farmer.substring(34);%></td>
+                            <td><%=transactions[i].Amount;%></td>
+                            <td><%=transactions[i].timestamp.substring(0,4);%></td>
+                            <td><%=transactions[i].timestamp.substring(5,7);%></td>
+                            <td><%=transactions[i].timestamp.substring(11,19);%></td>
+
+                            
+                        </tr>
+                        <%}%>
+                    </table>
+                </div>
+        </div> 
+               
+    </body>
+</html>
