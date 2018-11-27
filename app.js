@@ -205,11 +205,11 @@ app.post('/add_token', function(req, res){
 
 //Adding a purchase
 app.post('/retailer_page', function(req,res){
-    console.log(req.body);
+    console.log("***"+req.body);
     var farmer_details = req.body;
-    var oldID = req.body.aID;
-    var newID = req.body.AadharId;
-    console.log("old: "+oldID+" new: "+newID);
+    //var oldID = req.body.aID;
+    //var newID = req.body.AadharId;
+    //console.log("old: "+oldID+" new: "+newID);
     var UR="org.example.empty.Farmer#";
     var obj={
         "$class": "org.example.empty.purchase",
