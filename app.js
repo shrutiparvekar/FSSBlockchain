@@ -4,6 +4,7 @@ var http    = require('http');
 var jsalert=require('js-alert');
 const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
+var request = require('request');
 
 app.set("view engine", "ejs");
 console.log("Starting the fun..");
@@ -338,8 +339,68 @@ app.get('/bank/bank_page', function(req,res){
 // });
 
 app.post('/farmer_login', function(req,res){
-    res.render('farmer_page');
+    var options = { method: 'GET',
+      url: 'https://blockchaindb-55af.restdb.io/rest/farmer',
+      headers: 
+      { 'cache-control': 'no-cache',
+        'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+      } 
+    };
+
+     //console.log(req.body.aadharId + "-----");
+     var aadharid = req.body.aadharId;
+     var password = req.body.password;
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  var flag = 0;
+  var farmerArray = JSON.parse(body);
+  for(var i = 0; i < farmerArray.length; i++){
+    //console.log( farmerArray[i].farmerId);
+    if(aadharid == farmerArray[i].farmerId && password == farmerArray[i].farmerPassword) {flag = 1;}
+  }
+  if(flag) res.render('farmer_page');
+  else res.redirect('/farmer/farmer_login');
+  console.log(body);
+ 
+  // console.log(farmerArray);
+  // console.log(farmerArray[0].farmerId);
+  // console.log(farmerArray.length + "****");
 });
+    
+});
+
+
+app.post('/gov_login', function(req,res){
+  var options = { method: 'GET',
+    url: 'https://blockchaindb-55af.restdb.io/rest/government',
+    headers: 
+    { 'cache-control': 'no-cache',
+      'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+    } 
+  };
+
+   //console.log(req.body.govtId + "-----");
+   var govtid = req.body.govtId;
+   var password = req.body.password;
+request(options, function (error, response, body) {
+if (error) throw new Error(error);
+var flag = 0;
+var govtArray = JSON.parse(body);
+for(var i = 0; i < govtArray.length; i++){
+  //console.log(govtArray[i].farmerId);
+  if(govtid == govtArray[i].govtId && password == govtArray[i].govtPassword) {flag = 1;}
+}
+if(flag) res.render('gov_page');
+else res.redirect('/government/gov_login');
+console.log(body);
+
+// console.log(govtArray);
+// console.log(govtArray[0].farmerId);
+// console.log(govtArray.length + "****");
+});
+  
+});
+
 
 app.post('/generate_report', function(req,resp){
     var entries=[];
@@ -401,6 +462,33 @@ app.post('/generate_report', function(req,resp){
     });
    
 });
+
+
+function getFarmerInfo(id){
+  var options = { method: 'GET',
+      url: 'https://blockchaindb-55af.restdb.io/rest/farmer',
+      headers: 
+      { 'cache-control': 'no-cache',
+        'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+      } 
+    };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  var index = 0;
+  var farmerArray = JSON.parse(body);
+  for(var i = 0; i < farmerArray.length; i++){
+    //console.log( farmerArray[i].farmerId);
+    if(id == farmerArray[i].farmerId) {index = i;}
+  }
+  var infoObject = farmerArray[index];
+  console.log(infoObject);
+  return infoObject;
+  // console.log(farmerArray);
+  // console.log(farmerArray[0].farmerId);
+  // console.log(farmerArray.length + "****");
+});
+}
 
 app.listen(3500, function(){
     console.log("Server is listening on 3500");
