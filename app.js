@@ -75,12 +75,18 @@ const nexmo = new Nexmo({
   apiSecret: '6MHcx8MzNUIZYC9N'
 });
 
-app.post('/request', (req, res) => {
+app.post('/request',async (req, res) => {
     // A user registers with a mobile phone number
     //let phoneNumber = req.body.number;
     let aadharNo = req.body.AadharId;
+    console.log("ID: "+aadharNo);
+    let farmer_info = await getFarmerInfo(aadharNo);
+    console.log("farmer's info: "+JSON.stringify(farmer_info));
+
     //get mobile number corresponding to above aadhar number
-    let phoneNumber = "918830618513"
+    //let phoneNumber = "918830618513"
+    let phoneNumber = farmer_info.farmerMobile;
+    phoneNumber = "91"+phoneNumber;
     console.log(phoneNumber);
     let temp;
     nexmo.verify.request({number: phoneNumber, brand: 'Awesome Company'}, (err, result) => {
@@ -98,7 +104,13 @@ app.post('/request', (req, res) => {
           //A status of 0 means success! Respond with 200: OK
           //res.status(200).send(result);
           console.log('rrrr '+temp);
-          res.render('retailer_page', {requestID: temp});
+
+
+
+
+
+
+          res.render('retailer_page', {requestID: temp, verified: 0, id: aadharNo});
         } else {
           //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
           //The rest of the status values can be found here: https://developer.nexmo.com/api/verify#status-values
@@ -114,6 +126,7 @@ app.post('/request', (req, res) => {
     //To verify the phone number the request ID and code are required.
     let code = req.body.code;
     let requestId = req.body.reqID;
+    let cid = req.body.aID;
    
     console.log("Code: " + code + " Request ID: " + requestId);
    
@@ -129,13 +142,14 @@ app.post('/request', (req, res) => {
         if(result && result.status == '0') {
           //A status of 0 means success! Respond with 200: OK
           //res.status(200).send(result);
-          console.log('Account verified!')
-          res.render('retailer_page',  {requestID: 0});
+          console.log('Account verified!');
+          res.render('retailer_page',  {requestID: 0, verified: 1, id: cid});
         } else {
           //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
           //The rest of the status values can be found here: https://developer.nexmo.com/api/verify#status-values
           //res.status(400).send(result);
-          console.log('Error verifying account')
+          console.log('Error verifying account');
+          res.render('retailer_page',  {requestID: 0, verified: 2});
         }
       }
     });
@@ -152,7 +166,7 @@ app.get('/', function(req,res){
     res.render('home');
 });
 app.get('/retailer/retailer_page', function(req,res){
-    res.render('retailer_page', {requestID: 0});
+    res.render('retailer_page', {requestID: 0, verified: 0});
 });
 
 app.get('/farmer/farmer_login', function(req,res){
@@ -193,14 +207,20 @@ app.post('/add_token', function(req, res){
 app.post('/retailer_page', function(req,res){
     console.log(req.body);
     var farmer_details = req.body;
+    var oldID = req.body.aID;
+    var newID = req.body.AadharId;
+    console.log("old: "+oldID+" new: "+newID);
     var UR="org.example.empty.Farmer#";
     var obj={
         "$class": "org.example.empty.purchase",
-        "quantity": farmer_details.quantity,  
+        "quantity": farmer_details.quantity,
         "farmer": ""+UR+farmer_details.AadharId
     //"transactionId": "string",
     };
     //console.log(obj);
+    if(oldID != ewID){
+      res.render('retailer_page.ejs',{success:false});
+    }
     fetch('http://localhost:3000/api/org.example.empty.purchase/',{
         method: 'POST',
         headers: {'Content-Type':'application/json'},
@@ -433,21 +453,23 @@ function getFarmerInfo(id){
       } 
     };
 
-request(options, function (error, response, body) {
-  if (error) throw new Error(error);
-  var index = 0;
-  var farmerArray = JSON.parse(body);
-  for(var i = 0; i < farmerArray.length; i++){
-    //console.log( farmerArray[i].farmerId);
-    if(id == farmerArray[i].farmerId) {index = i;}
-  }
-  var infoObject = farmerArray[index];
-  console.log(infoObject);
-  return infoObject;
-  // console.log(farmerArray);
-  // console.log(farmerArray[0].farmerId);
-  // console.log(farmerArray.length + "****");
-});
+    return new Promise(function(resolve, reject) {
+      request(options, function (error, response, body) {
+        if (error) throw new Error(error);
+        var index = 0;
+        var farmerArray = JSON.parse(body);
+        for(var i = 0; i < farmerArray.length; i++){
+          //console.log( farmerArray[i].farmerId);
+          if(id == farmerArray[i].farmerId) {index = i;}
+        }
+        var infoObject = farmerArray[index];
+        console.log(infoObject);
+        resolve(infoObject);
+        // console.log(farmerArray);
+        // console.log(farmerArray[0].farmerId);
+        // console.log(farmerArray.length + "****");
+      });
+  });
 }
 
 app.listen(3500, function(){
