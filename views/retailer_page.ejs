@@ -33,7 +33,7 @@
                         <a class="btn btn-primary mybtn" href="">Add Purchase</a>
                 </div> -->
 
-                <div class="col-md-8" style="box-sizing: border-box; padding: 30px; background-color: white; margin: auto; height: 300px; border-radius: 5px; box-shadow: 0 0 10px rgb(97, 92, 92);">
+                <div class="col-md-8" style="box-sizing: border-box; padding: 30px; background-color: white; margin: auto; height: 350px; border-radius: 5px; box-shadow: 0 0 10px rgb(97, 92, 92);">
                     <form method="POST" action="/retailer_page">
                         <h2 style="text-align:center;">Purchase Page</h2>
                         <div class="form-group">
@@ -55,9 +55,10 @@
                           <%}%>
                         <%}%>
                         <input type="submit" class="btn btn-dark" formaction="/request" value="Generate OTP">
-                        <button onclick="document.getElementById('id01').style.display='block'"  class="btn btn-primary">Verify OTP</button>
+                        
                       
                       </form>
+                      <button onclick="document.getElementById('id01').style.display='block'"  class="btn btn-dark">Verify OTP</button>
                       
                       <!--form method="POST" action="/request">
                         <input type="submit" class="btn btn-dark"  value="Generate OTP">    
