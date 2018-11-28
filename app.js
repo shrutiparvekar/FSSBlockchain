@@ -211,8 +211,9 @@ app.post('/add_token', function(req, res){
 
 //Adding a purchase
 app.post('/retailer_page', function(req,res){
-    console.log(req.body);
+    console.log("***"+req.body);
     var farmer_details = req.body;
+<<<<<<< HEAD
     var oldID=0;
     var newID=0;
     oldID = req.body.aID;
@@ -221,6 +222,11 @@ app.post('/retailer_page', function(req,res){
         res.render('retailer_page',  {requestID: 0, verified: 2}); 
     }
   else{consol.log("Same hai");
+=======
+    //var oldID = req.body.aID;
+    //var newID = req.body.AadharId;
+    //console.log("old: "+oldID+" new: "+newID);
+>>>>>>> 2998d6873a792c881eaf2766688611d24510a6fe
     var UR="org.example.empty.Farmer#";
     var obj={
         "$class": "org.example.empty.purchase",
