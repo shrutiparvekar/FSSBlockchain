@@ -5,12 +5,15 @@ var jsalert=require('js-alert');
 const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
 var request = require('request');
+var session = require('express-session');
 
 app.set("view engine", "ejs");
 console.log("Starting the fun..");
 app.use(express.static(__dirname + "/public")); 
 app.use(bodyParser.urlencoded({extended:true}));
-
+app.use(session({secret: 'best blockchain app in the world'}));
+var farmerSession = 0;
+var govtSession = 0;
 /////////////////////////////////////////////
 
 //////// to find the trader with id = 1 and find it's commodity Id
@@ -104,12 +107,6 @@ app.post('/request',async (req, res) => {
           //A status of 0 means success! Respond with 200: OK
           //res.status(200).send(result);
           console.log('rrrr '+temp);
-
-
-
-
-
-
           res.render('retailer_page', {requestID: temp, verified: 0, id: aadharNo});
         } else {
           //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
@@ -173,6 +170,20 @@ app.get('/farmer/farmer_login', function(req,res){
     res.render('farmer_login');
 });
 
+app.get('/farmer_page', function(req,res){
+  console.log("aadharId " + farmerSession.aadharId);
+  console.log("password " + farmerSession.password);
+if(farmerSession == 0){
+  res.redirect('/farmer/farmer_login');
+} 
+else{
+  if(farmerSession.aadharId){
+    res.render('farmer_page');
+  }
+  else res.redirect('/farmer/farmer_login');
+}
+});
+
 app.get('/government/gov_login', function(req, res){
     res.render('gov_login');
 });
@@ -180,8 +191,16 @@ app.get('/government/gov_login', function(req, res){
 /*app.post('/gov_page', function(req,res){
     res.render('gov_page');
 });*/
-app.get('/gov_page', function(req,res){
-    res.render('gov_page');
+app.get('/gov_login', function(req,res){
+  if(govtSession == 0){
+    res.redirect('/government/gov_login');
+  } 
+  else{
+    if(govtSession.govtId){
+      res.render('gov_page');
+    }
+    else res.redirect('/government/gov_login');
+  }
 });
 
 //Add Token
@@ -362,6 +381,10 @@ app.get('/bank/bank_page', function(req,res){
 // });
 
 app.post('/farmer_login', function(req,res){
+    farmerSession = req.session;
+    farmerSession.aadharId = req.body.aadharId;
+    farmerSession.password = req.body.password;
+    console.log("farmerSession "+farmerSession.password);
     var options = { method: 'GET',
       url: 'https://blockchaindb-55af.restdb.io/rest/farmer',
       headers: 
@@ -381,10 +404,9 @@ request(options, function (error, response, body) {
     //console.log( farmerArray[i].farmerId);
     if(aadharid == farmerArray[i].farmerId && password == farmerArray[i].farmerPassword) {flag = 1;}
   }
-  if(flag) res.render('farmer_page');
+  if(flag) res.redirect('/farmer_page');
   else res.redirect('/farmer/farmer_login');
-  console.log(body);
- 
+  //console.log(body);
   // console.log(farmerArray);
   // console.log(farmerArray[0].farmerId);
   // console.log(farmerArray.length + "****");
@@ -394,6 +416,10 @@ request(options, function (error, response, body) {
 
 
 app.post('/gov_login', function(req,res){
+  govtSession = req.session;
+  govtSession.govtId = req.body.govtId;
+  govtSession.password = req.body.password;
+  console.log(govtSession.govtId + " " + govtSession.password);
   var options = { method: 'GET',
     url: 'https://blockchaindb-55af.restdb.io/rest/government',
     headers: 
@@ -413,7 +439,10 @@ for(var i = 0; i < govtArray.length; i++){
   //console.log(govtArray[i].farmerId);
   if(govtid == govtArray[i].govtId && password == govtArray[i].govtPassword) {flag = 1;}
 }
-if(flag) res.render('gov_page');
+if(flag){
+  whoIsLoggedIn = govtid;
+  res.render('gov_page');
+} 
 else res.redirect('/government/gov_login');
 console.log(body);
 
@@ -422,6 +451,11 @@ console.log(body);
 // console.log(govtArray.length + "****");
 });
   
+});
+
+app.post('/gov_logout', function(req,res){
+  govtSession = 0;
+  res.redirect('/');
 });
 
 
@@ -515,6 +549,17 @@ function getFarmerInfo(id){
   });
 }
 
+/// Login and logout logic
+
+function isFarmerLoggedIn(){
+  if(farmerSession.aadharId) return 1;
+  else return 0;
+}
+
+function logout(){
+  whoIsLoggedIn = 0;
+}
+
 app.listen(3500, function(){
     console.log("Server is listening on 3500");
 });
@@ -532,3 +577,15 @@ ref.on("value", function(snapshot) {
 }, function (errorObject) {
   console.log("The read failed: " + errorObject.code);
 });*/
+
+
+/*
+app.get('/logout',function(req,res){
+req.session.destroy(function(err) {
+  if(err) {
+    console.log(err);
+  } else {
+    res.redirect('/');
+  }
+});
+*/
