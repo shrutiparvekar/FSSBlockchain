@@ -12,13 +12,13 @@
                 }
             </style>
         </head>
-    <body>
+    <body class="background">
         <!-- Image and text -->
         
       <nav class="navbar navbar navbar-dark bg-dark" style="height:10%;">
         <a class="navbar-brand" href="/">
-          <img src="/images/blockchain.svg" width="30" height="30" class="d-inline-block align-top" alt="">
-          Blockchain App
+          <img src="/images/left-arrow.png" width="30" height="30" class="d-inline-block align-top" alt="" style="margin-right:10px; ">
+            Fertilizer Subsidy Distribution
         </a>
       </nav>
       <div>
@@ -38,16 +38,33 @@
                         <h2 style="text-align:center;">Purchase Page</h2>
                         <div class="form-group">
                           <label for="exampleInputEmail1">Aadhar ID</label>
-                          <input type="text" class="form-control" name="AadharId" placeholder="Enter Aadhar ID">
+                          <input type="text" id="aadhar" class="form-control" name="AadharId" placeholder="Enter Aadhar ID">
                         </div>
                         <div class="form-group">
-                          <label for="exampleInputPassword1">Quantity</label>
+                          <label for="exampleInputPassword1" required>Quantity</label>
                           <input type="number" class="form-control" name="quantity" placeholder="Quantity">
                         </div>
-                        <input type="submit" class="btn btn-dark">
+                        
+                        <% if(verified==1 ){ %>
+                          <input type="hidden" value="<%= id %>" name="aID">  
+                        <input type="submit" class="btn btn-dark" style="float: right">
+                        <% }else{ %>
+                          <input type="submit" class="btn btn-dark" style="float: right" disabled>
+                          <% if(verified==2){ %>
+                          <script>alert("Invalid OTP");</script>
+                          <%}%>
+                        <%}%>
+                        <input type="submit" class="btn btn-dark" formaction="/request" value="Generate OTP">
+                        <button onclick="document.getElementById('id01').style.display='block'"  class="btn btn-primary">Verify OTP</button>
+                      
                       </form>
-                      <button onclick="document.getElementById('id01').style.display='block'" class="btn btn-primary mybtn">Verify OTP</button>
-
+                      
+                      <!--form method="POST" action="/request">
+                        <input type="submit" class="btn btn-dark"  value="Generate OTP">    
+                    </form-->
+                    
+                      
+                      
                       <div id="id01" class="w3-modal">
                             <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
                         
@@ -55,13 +72,14 @@
                                 <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
                                 <!--img src="img_avatar4.png" alt="Avatar" style="width:30%" class="w3-circle w3-margin-top"-->
                               </div>
-                        
+                              
                               <form class="w3-container" action="/check" method="POST">
                                 <div class="w3-section">
                                   <label><b>Mobile verification</b></label>
                                   <input class="w3-input w3-border w3-margin-bottom" type="number" placeholder="Enter OTP" name="code" required>
                                     <% if(requestID){ %>
                                   <input type="hidden" value="<%= requestID %>" name="reqID">
+                                  <input type="hidden" value="<%= id %>" name="aID">
                                         <% } %>
                                   <button class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Verify OTP</button>
                                 </div>
@@ -70,9 +88,7 @@
                             </div>    
                         </div>
 
-                      <form method="POST" action="/request">
-                        <input type="submit" class="btn btn-dark" value="Generate OTP">    
-                    </form>
+                      
                 </div>  
 
                 <!-- <form method="POST" action="/retailer_page">

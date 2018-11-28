@@ -4,6 +4,7 @@ var http    = require('http');
 var jsalert=require('js-alert');
 const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
+var request = require('request');
 
 app.set("view engine", "ejs");
 console.log("Starting the fun..");
@@ -74,10 +75,18 @@ const nexmo = new Nexmo({
   apiSecret: '6MHcx8MzNUIZYC9N'
 });
 
-app.post('/request', (req, res) => {
+app.post('/request',async (req, res) => {
     // A user registers with a mobile phone number
     //let phoneNumber = req.body.number;
-    let phoneNumber = "918830618513"
+    let aadharNo = req.body.AadharId;
+    console.log("ID: "+aadharNo);
+    let farmer_info = await getFarmerInfo(aadharNo);
+    console.log("farmer's info: "+JSON.stringify(farmer_info));
+
+    //get mobile number corresponding to above aadhar number
+    //let phoneNumber = "918830618513"
+    let phoneNumber = farmer_info.farmerMobile;
+    phoneNumber = "91"+phoneNumber;
     console.log(phoneNumber);
     let temp;
     nexmo.verify.request({number: phoneNumber, brand: 'Awesome Company'}, (err, result) => {
@@ -95,7 +104,13 @@ app.post('/request', (req, res) => {
           //A status of 0 means success! Respond with 200: OK
           //res.status(200).send(result);
           console.log('rrrr '+temp);
-          res.render('retailer_page', {requestID: temp});
+
+
+
+
+
+
+          res.render('retailer_page', {requestID: temp, verified: 0, id: aadharNo});
         } else {
           //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
           //The rest of the status values can be found here: https://developer.nexmo.com/api/verify#status-values
@@ -111,6 +126,7 @@ app.post('/request', (req, res) => {
     //To verify the phone number the request ID and code are required.
     let code = req.body.code;
     let requestId = req.body.reqID;
+    let cid = req.body.aID;
    
     console.log("Code: " + code + " Request ID: " + requestId);
    
@@ -119,23 +135,25 @@ app.post('/request', (req, res) => {
         console.log(err);
    
         //Oops! Something went wrong, respond with 500: Server Error
-        res.status(500).send(err);
+        //res.status(500).send(err);
       } else {
         console.log(result)
    
         if(result && result.status == '0') {
           //A status of 0 means success! Respond with 200: OK
-          res.status(200).send(result);
-          console.log('Account verified!')
+          //res.status(200).send(result);
+          console.log('Account verified!');
+          res.render('retailer_page',  {requestID: 0, verified: 1, id: cid});
         } else {
           //A status other than 0 means that something is wrong with the request. Respond with 400: Bad Request
           //The rest of the status values can be found here: https://developer.nexmo.com/api/verify#status-values
-          res.status(400).send(result);
-          console.log('Error verifying account')
+          //res.status(400).send(result);
+          console.log('Error verifying account');
+          res.render('retailer_page',  {requestID: 0, verified: 2});
         }
       }
     });
-    
+
   });
 
 /*const from = 'Nexmo'
@@ -147,19 +165,22 @@ nexmo.message.sendSms(from, to, text)
 app.get('/', function(req,res){
     res.render('home');
 });
-app.get('/retailer/retailer_page', function(req,res){
-    res.render('retailer_page', {requestID: 0});
+app.get('/retailer_page', function(req,res){
+    res.render('retailer_page', {requestID: 0, verified: 0});
 });
 
 app.get('/farmer/farmer_login', function(req,res){
-    res.render('farmer_login');
+  res.render('farmer_login');
 });
 
 app.get('/government/gov_login', function(req, res){
     res.render('gov_login');
 });
 
-app.post('/gov_login', function(req,res){
+/*app.post('/gov_page', function(req,res){
+    res.render('gov_page');
+});*/
+app.get('/gov_page', function(req,res){
     res.render('gov_page');
 });
 
@@ -190,8 +211,11 @@ app.post('/add_token', function(req, res){
 
 //Adding a purchase
 app.post('/retailer_page', function(req,res){
-    console.log(req.body);
+    console.log("***"+req.body);
     var farmer_details = req.body;
+    //var oldID = req.body.aID;
+    //var newID = req.body.AadharId;
+    //console.log("old: "+oldID+" new: "+newID);
     var UR="org.example.empty.Farmer#";
     console.log("************************");
     
@@ -210,11 +234,14 @@ app.post('/retailer_page', function(req,res){
             
         var obj={
         "$class": "org.example.empty.purchase",
-        "quantity": farmer_details.quantity,  
+        "quantity": farmer_details.quantity,
         "farmer": ""+UR+farmer_details.AadharId
     //"transactionId": "string",
     };
     //console.log(obj);
+    /*if(oldID != newID){
+      res.render('retailer_page.ejs',{success:false});
+    }*/
     fetch('http://localhost:3000/api/org.example.empty.purchase/',{
         method: 'POST',
         headers: {'Content-Type':'application/json'},
@@ -237,7 +264,7 @@ app.post('/retailer_page', function(req,res){
        // console.log(get_farmer_info);
         console.log(get_farmer_info.currArrayIndex);
         newIndex=get_farmer_info.currArrayIndex+1;
-        newSubsidyId=farmer_details.AadharId+'.'+newIndex;
+        newSubsidyId=farmer_details.AadharId+Date.now();
         console.log(newSubsidyId);
         return newSubsidyId;
     }).then((newSubsidyId) => {
@@ -278,7 +305,7 @@ app.post('/retailer_page', function(req,res){
               fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
               .then(function(response) {
                   return response.json();
-              }).then(function(myJsoni) {
+              }).then(async function(myJsoni) {
                   const Nexmo = require('nexmo')
                   const nexmo = new Nexmo({
                   apiKey: '010ba075',
@@ -287,7 +314,9 @@ app.post('/retailer_page', function(req,res){
                   console.log('Balance sent: '+myJsoni.balance+'\n'+'quant: '+farmer_details.quantity+'\n')
                   console.log(JSON.stringify(myJsoni))
                   const from = 'Nexmo'
-                  const to = '918830618513'
+                  let farmer = await getFarmerInfo(farmer_details.AadharId);
+    
+                  const to = farmer.farmerMobile;
                   var bals=Number(myJsoni.balance)+Number(farmer_details.quantity)
                   const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+bals;
                   console.log("***"+text+"***")
@@ -298,9 +327,9 @@ app.post('/retailer_page', function(req,res){
             }) 
             
             
-            .catch(err => {console.log(err);});
+            .catch(err => {console.log(err);res.render('error.ejs',{errorMsg: "Transaction failed! Please try again later"});});
 
-         }).catch(error => console.log(error));
+         }).catch(error => {console.log(error);res.render('error.ejs',{errorMsg: "Transaction failed! Please try again later"});});
         }
     });
 });
@@ -355,10 +384,82 @@ app.get('/bank/bank_page', function(req,res){
 // });
 
 app.post('/farmer_login', function(req,res){
-    res.render('farmer_page');
+    var options = { method: 'GET',
+      url: 'https://blockchaindb-55af.restdb.io/rest/farmer',
+      headers: 
+      { 'cache-control': 'no-cache',
+        'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+      } 
+    };
+
+     //console.log(req.body.aadharId + "-----");
+     var aadharid = req.body.aadharId;
+     var password = req.body.password;
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  var flag = 0;
+  var farmerArray = JSON.parse(body);
+  for(var i = 0; i < farmerArray.length; i++){
+    //console.log( farmerArray[i].farmerId);
+    if(aadharid == farmerArray[i].farmerId && password == farmerArray[i].farmerPassword) {flag = 1;}
+  }
+  if(flag){
+    fetch(`http://localhost:3000/api/org.example.empty.Farmer/${req.body.aadharId}`)
+    .then(function(response) {
+        return response.json();
+    }).then(function(myJson) {
+        var get_farmer_info=myJson;
+        res.render('farmer_page',{farmerid:get_farmer_info.aadharid,farmerbal:get_farmer_info.balance});
+    });
+    //res.render('farmer_page');
+  } 
+  else res.redirect('/farmer/farmer_login');
+  console.log(body);
+ 
+  // console.log(farmerArray);
+  // console.log(farmerArray[0].farmerId);
+  // console.log(farmerArray.length + "****");
+});
+    
 });
 
-app.post('/generate_report', function(req,res){
+
+app.post('/gov_login', function(req,res){
+  var options = { method: 'GET',
+    url: 'https://blockchaindb-55af.restdb.io/rest/government',
+    headers: 
+    { 'cache-control': 'no-cache',
+      'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+    } 
+  };
+
+   //console.log(req.body.govtId + "-----");
+   var govtid = req.body.govtId;
+   var password = req.body.password;
+request(options, function (error, response, body) {
+if (error) throw new Error(error);
+var flag = 0;
+var govtArray = JSON.parse(body);
+for(var i = 0; i < govtArray.length; i++){
+  //console.log(govtArray[i].farmerId);
+  if(govtid == govtArray[i].govtId && password == govtArray[i].govtPassword) {flag = 1;}
+}
+if(flag) res.render('gov_page');
+else res.redirect('/government/gov_login');
+console.log(body);
+
+// console.log(govtArray);
+// console.log(govtArray[0].farmerId);
+// console.log(govtArray.length + "****");
+});
+  
+});
+
+
+app.post('/generate_report', function(req,resp){
+    var entries=[];
+    var month;
+    var year;
 	fetch(`http://localhost:3000/api/org.example.empty.subsidyTransfer`)
     .then(function(response) {
         return response.json();
@@ -368,16 +469,82 @@ app.post('/generate_report', function(req,res){
     		console.log('\nTransaction '+i+': \n'+JSON.stringify(res[i]));
     		var transaction=res[i];
     		var date=new Date(transaction.timestamp);
-    		var year=date.getFullYear();
-    		var month=date.getMonth()+1;
+    		year=date.getFullYear();
+    		month=date.getMonth()+1;
     		if(month==req.body.reportMonth && year==req.body.reportYear){ transactions.push(transaction);console.log(' *** ');}
     		console.log('\n'+date+'\t Year: '+year+'\t Month: '+month+'\n');
-    	}
-    	for(var i in transactions){
-    		console.log('\nDisplayed Transaction : \n'+JSON.stringify(res[i]));
-    	}
+        }
+        
+        fetch(`http://localhost:3000/api/org.example.empty.Subsidy`)
+            .then(function(response){
+                return response.json();
+            }).then(function(res){
+               
+                 for(i in res){
+                     entries[i]=(res[i]);
+                     //console.log(i+"  "+entries[i]);
+                 }  
+                 return entries;
+            }).then(function(entries){
+                var i=0;
+                for(var i in transactions){
+                    
+                    //     //transactions[i]["Quantity"]="1";
+                        //console.log(i+'\nDisplayed Transaction : \n'+JSON.stringify(transactions[i]));
+                        var subsidyId;
+                        subsidyId=transactions[i].subsidy;
+                        subsidyId=subsidyId.substring(35);
+                        //console.log(subsidyId);
+                        var j=0;
+                        while(true){
+                            //console.log(entries[j].sid);
+                            if(subsidyId==entries[j].sid){
+                                transactions[i]["Amount"]=entries[j].amount; 
+                                break; 
+                            }
+                            else j=j+1;
+                        }
+                       // console.log(i+'\nDisplayed Transaction : \n'+JSON.stringify(transactions[i]));
+                       
+                     } 
+                     return transactions;
+                        
+            }).then(function(transactions){
+               // console.log("-----------------"+JSON.stringify(entries));
+                resp.render('blockchain-reports',{transactions:transactions,month:month,year:year});
+            });
     });
+   
 });
+
+
+function getFarmerInfo(id){
+  var options = { method: 'GET',
+      url: 'https://blockchaindb-55af.restdb.io/rest/farmer',
+      headers: 
+      { 'cache-control': 'no-cache',
+        'x-apikey': '9f1f6ca37d5f661ec5d85b571ebb269a819ef'
+      } 
+    };
+
+    return new Promise(function(resolve, reject) {
+      request(options, function (error, response, body) {
+        if (error) throw new Error(error);
+        var index = 0;
+        var farmerArray = JSON.parse(body);
+        for(var i = 0; i < farmerArray.length; i++){
+          //console.log( farmerArray[i].farmerId);
+          if(id == farmerArray[i].farmerId) {index = i;}
+        }
+        var infoObject = farmerArray[index];
+        console.log(infoObject);
+        resolve(infoObject);
+        // console.log(farmerArray);
+        // console.log(farmerArray[0].farmerId);
+        // console.log(farmerArray.length + "****");
+      });
+  });
+}
 
 app.listen(3500, function(){
     console.log("Server is listening on 3500");
