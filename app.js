@@ -213,9 +213,14 @@ app.post('/add_token', function(req, res){
 app.post('/retailer_page', function(req,res){
     console.log(req.body);
     var farmer_details = req.body;
-    var oldID = req.body.aID;
-    var newID = req.body.AadharId;
-    console.log("old: "+oldID+" new: "+newID);
+    var oldID=0;
+    var newID=0;
+    oldID = req.body.aID;
+    newID = req.body.AadharId;
+    if(oldID!=newID){console.log("old: "+oldID+" new: "+newID);
+        res.render('retailer_page',  {requestID: 0, verified: 2}); 
+    }
+  else{consol.log("Same hai");
     var UR="org.example.empty.Farmer#";
     var obj={
         "$class": "org.example.empty.purchase",
@@ -302,14 +307,14 @@ app.post('/retailer_page', function(req,res){
 
                     nexmo.message.sendSms(from, to, text)
                 });
-            	res.render('retailer_page.ejs',{success:true});
+            	res.render('home.ejs',{success:true});
             }) 
             
             
             .catch(err => {console.log(err);});
 
          }).catch(error => console.log(error));
-    
+        } 
 });
 
 
