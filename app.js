@@ -167,7 +167,7 @@ app.get('/retailer_page', function(req,res){
 });
 
 app.get('/farmer/farmer_login', function(req,res){
-    res.render('farmer_login');
+  res.render('farmer_login');
 });
 
 app.get('/farmer_page', function(req,res){
@@ -211,7 +211,7 @@ app.post('/add_token', function(req, res){
     //console.log(req.body);
     var obj={
         "$class": "org.example.empty.addTokens",
-        "government": "G1",
+        "government": "GOVT",
         "amount": numToken,
       }
       console.log(obj);
@@ -230,13 +230,33 @@ app.post('/add_token', function(req, res){
 
 //Adding a purchase
 app.post('/retailer_page', function(req,res){
-    console.log(req.body);
+    console.log("***"+req.body);
     var farmer_details = req.body;
-    var oldID = req.body.aID;
-    var newID = req.body.AadharId;
-    console.log("old: "+oldID+" new: "+newID);
+    var oldID=0;
+    var newID=0;
+    oldID = req.body.aID;
+    newID = req.body.AadharId;
+    if(oldID!=newID){console.log("old: "+oldID+" new: "+newID);
+        res.render('retailer_page',  {requestID: 0, verified: 2}); 
+    }
+  else{console.log("Same hai");
     var UR="org.example.empty.Farmer#";
-    var obj={
+    console.log("************************");
+    
+    fetch("http://localhost:3000/api/org.example.empty.Government#GOVT")
+    .then(function(response) {
+        return response.json();
+    }).then(function(myJson) {
+        var resp=myJson;
+        return resp[0].balance;
+    }).then(function(bal){
+        if(bal<farmer_details.quantity){
+            console.log('Transaction failed: Out of tokens!');
+            res.render('error.ejs',{errorMsg: "Transaction failed: Out of tokens!"});
+        }
+        else{
+            
+        var obj={
         "$class": "org.example.empty.purchase",
         "quantity": farmer_details.quantity,
         "farmer": ""+UR+farmer_details.AadharId
@@ -268,7 +288,7 @@ app.post('/retailer_page', function(req,res){
        // console.log(get_farmer_info);
         console.log(get_farmer_info.currArrayIndex);
         newIndex=get_farmer_info.currArrayIndex+1;
-        newSubsidyId=farmer_details.AadharId+'.'+newIndex;
+        newSubsidyId=farmer_details.AadharId+Date.now();
         console.log(newSubsidyId);
         return newSubsidyId;
     }).then((newSubsidyId) => {
@@ -277,7 +297,7 @@ app.post('/retailer_page', function(req,res){
             "$class": "org.example.empty.Subsidy",
             "sid": newSubsidyId,
             "amount": farmer_details.quantity,
-            "owner": "resource:org.example.empty.Government#G1"
+            "owner": "resource:org.example.empty.Government#GOVT"
         };
         console.log(obj1);
           fetch('http://localhost:3000/api/org.example.empty.Subsidy/',{
@@ -293,7 +313,7 @@ app.post('/retailer_page', function(req,res){
                 var obj2={
                     "$class": "org.example.empty.subsidyTransfer",
                     "farmer": farmer_details.AadharId,
-                    "government": "G1",
+                    "government": "GOVT",
                     "subsidy": newSubsidyId
                 };
                 fetch('http://localhost:3000/api/org.example.empty.subsidyTransfer/',{
@@ -305,30 +325,38 @@ app.post('/retailer_page', function(req,res){
                     return response.json();
                 }).catch(err => {console.log(err);});
             }).then(function(){
-				fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
-                .then(function(response) {
-                    return response.json();
-                }).then(function(myJson) {
-                    const Nexmo = require('nexmo')
-                    const nexmo = new Nexmo({
-                    apiKey: '010ba075',
-                    apiSecret: '6MHcx8MzNUIZYC9N'
-                    })
+        
+              fetch(`http://localhost:3000/api/org.example.empty.Farmer/${farmer_details.AadharId}`)
+              .then(function(response) {
+                  return response.json();
+              }).then(async function(myJsoni) {
+                  const Nexmo = require('nexmo')
+                  const nexmo = new Nexmo({
+                  apiKey: '010ba075',
+                  apiSecret: '6MHcx8MzNUIZYC9N'
+                  })
+                  console.log('Balance sent: '+myJsoni.balance+'\n'+'quant: '+farmer_details.quantity+'\n')
+                  console.log(JSON.stringify(myJsoni))
+                  const from = 'Nexmo'
+                  let farmer = await getFarmerInfo(farmer_details.AadharId);
+    
+                  const to = farmer.farmerMobile;
+                  var bals=Number(myJsoni.balance)+Number(farmer_details.quantity)
+                  const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+bals;
+                  console.log("***"+text+"***")
+                  nexmo.message.sendSms(from, to, text)
+              });
 
-                    const from = 'Nexmo'
-                    const to = '918830618513'
-                    const text = 'Hello from FSS! Fertilizer purchase successful from you Aadhar ID '+farmer_details.AadharId+'. Current subsidy balance: '+myJson.balance;
-
-                    nexmo.message.sendSms(from, to, text)
-                });
-            	res.render('retailer_page.ejs',{success:true});
+            	res.render('home.ejs',{success:true});
             }) 
             
             
-            .catch(err => {console.log(err);});
+            .catch(err => {console.log(err);res.render('error.ejs',{errorMsg: "Transaction failed! Please try again later"});});
 
-         }).catch(error => console.log(error));
-    
+         }).catch(error => {console.log(error);res.render('error.ejs',{errorMsg: "Transaction failed! Please try again later"});});
+        }
+    });
+  }
 });
 
 
@@ -404,7 +432,16 @@ request(options, function (error, response, body) {
     //console.log( farmerArray[i].farmerId);
     if(aadharid == farmerArray[i].farmerId && password == farmerArray[i].farmerPassword) {flag = 1;}
   }
-  if(flag) res.redirect('/farmer_page');
+  if(flag){
+    fetch(`http://localhost:3000/api/org.example.empty.Farmer/${req.body.aadharId}`)
+    .then(function(response) {
+        return response.json();
+    }).then(function(myJson) {
+        var get_farmer_info=myJson;
+        res.render('farmer_page',{farmerid:get_farmer_info.aadharid,farmerbal:get_farmer_info.balance});
+    });
+    //res.render('farmer_page');
+  } 
   else res.redirect('/farmer/farmer_login');
   //console.log(body);
   // console.log(farmerArray);
